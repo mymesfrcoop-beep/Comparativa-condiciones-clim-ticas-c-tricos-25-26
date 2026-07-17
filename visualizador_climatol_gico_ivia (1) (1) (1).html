@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparativa Agroclimática IVIA (2025 - 2026)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-brand-800 to-emerald-950 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-5 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-brand-500/20 rounded-xl border border-brand-400/30">
+                    <svg class="w-8 h-8 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">Comparativa Climática IVIA</h1>
+                    <p class="text-xs text-brand-200 mt-0.5">Estaciones de Vila-real, Onda, Vall d'Uixó, Ribera de Cabanes y Nules (2025 vs. 2026)</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 text-xs bg-brand-900/50 px-3 py-1.5 rounded-lg border border-brand-700/50">
+                <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
+                <span>Referencia: <a href="http://riegos.ivia.es/datos-meteorologicos" target="_blank" class="underline hover:text-brand-300 font-medium">riegos.ivia.es</a></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6 sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-6">
+        
+        <!-- Sidebar Controls -->
+        <aside class="w-full lg:w-80 flex flex-col gap-5 shrink-0">
+            
+            <!-- Estaciones Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Estación IVIA
+                </h2>
+                <div class="space-y-2" id="station-picker">
+                    <button onclick="setStation('Vila-real')" id="btn-Vila-real" class="w-full text-left px-4 py-3 rounded-xl border text-sm font-medium transition-all duration-200 flex justify-between items-center group">
+                        <span>Vila-real EEA</span>
+                        <span class="text-xs text-slate-400 group-hover:text-slate-600">Litoral Plana</span>
+                    </button>
+                    <button onclick="setStation('Nules')" id="btn-Nules" class="w-full text-left px-4 py-3 rounded-xl border text-sm font-medium transition-all duration-200 flex justify-between items-center group">
+                        <span>Nules</span>
+                        <span class="text-xs text-slate-400 group-hover:text-slate-600">Litoral Citrícola</span>
+                    </button>
+                    <button onclick="setStation('Onda')" id="btn-Onda" class="w-full text-left px-4 py-3 rounded-xl border text-sm font-medium transition-all duration-200 flex justify-between items-center group">
+                        <span>Onda</span>
+                        <span class="text-xs text-slate-400 group-hover:text-slate-600">Interior Medio</span>
+                    </button>
+                    <button onclick="setStation('Vall d\'Uixó')" id="btn-Vall-d-Uixó" class="w-full text-left px-4 py-3 rounded-xl border text-sm font-medium transition-all duration-200 flex justify-between items-center group">
+                        <span>Vall d'Uixó</span>
+                        <span class="text-xs text-slate-400 group-hover:text-slate-600">Valle Pre-litoral</span>
+                    </button>
+                    <button onclick="setStation('Ribera de Cabanes')" id="btn-Ribera-de-Cabanes" class="w-full text-left px-4 py-3 rounded-xl border text-sm font-medium transition-all duration-200 flex justify-between items-center group">
+                        <span>Ribera de Cabanes</span>
+                        <span class="text-xs text-slate-400 group-hover:text-slate-600">Humedal Litoral</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Variables Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
+                    Variable Climática
+                </h2>
+                <div class="grid grid-cols-1 gap-2" id="variable-picker">
+                    <button onclick="setVariable('tempMedia')" id="btn-var-tempMedia" class="flex items-center gap-3 px-4 py-2.5 rounded-lg border text-sm text-left transition-all font-medium">
+                        <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                        <span>Temperatura Media (°C)</span>
+                    </button>
+                    <button onclick="setVariable('tempMaxima')" id="btn-var-tempMaxima" class="flex items-center gap-3 px-4 py-2.5 rounded-lg border text-sm text-left transition-all font-medium">
+                        <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                        <span>Temperatura Máxima (°C)</span>
+                    </button>
+                    <button onclick="setVariable('tempMinima')" id="btn-var-tempMinima" class="flex items-center gap-3 px-4 py-2.5 rounded-lg border text-sm text-left transition-all font-medium">
+                        <span class="w-3 h-3 rounded-full bg-indigo-600"></span>
+                        <span>Temp. Mínima (Nocturna) (°C)</span>
+                    </button>
+                    <button onclick="setVariable('tempMediaNocturna')" id="btn-var-tempMediaNocturna" class="flex items-center gap-3 px-4 py-2.5 rounded-lg border text-sm text-left transition-all font-medium">
+                        <span class="w-3 h-3 rounded-full bg-purple-600"></span>
+                        <span>Temp. Media Nocturna (°C)</span>
+                    </button>
+                    <button onclick="setVariable('humedad')" id="btn-var-humedad" class="flex items-center gap-3 px-4 py-2.5 rounded-lg border text-sm text-left transition-all font-medium">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                        <span>Humedad Relativa (%)</span>
+                    </button>
+                    <button onclick="setVariable('eto')" id="btn-var-eto" class="flex items-center gap-3 px-4 py-2.5 rounded-lg border text-sm text-left transition-all font-medium">
+                        <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                        <span>Evapotranspiración ETo (mm)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modos de Vista -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    Perspectiva Analítica
+                </h2>
+                <div class="space-y-2">
+                    <button onclick="setViewMode('years')" id="btn-mode-years" class="w-full text-center py-2 px-3 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all border">
+                        Comparación 2025 vs 2026
+                    </button>
+                    <button onclick="setViewMode('stations')" id="btn-mode-stations" class="w-full text-center py-2 px-3 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all border">
+                        Comparación de Estaciones
+                    </button>
+                </div>
+            </div>
+
+            <!-- Descargas e Info -->
+            <div class="bg-gradient-to-br from-brand-50 to-emerald-100 rounded-2xl p-5 border border-brand-100 flex flex-col gap-3">
+                <h3 class="text-xs font-bold text-brand-800 uppercase tracking-widest">Base de Datos de Riegos</h3>
+                <p class="text-xs text-brand-700 leading-relaxed">Los datos reflejan los sensores de la red del <strong>IVIA</strong>. La ETo se computa mediante la ecuación de Penman-Monteith (FAO-56).</p>
+                <button onclick="exportToCSV()" class="w-full mt-2 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-700 hover:bg-brand-800 text-white rounded-xl text-xs font-semibold transition-all shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Exportar Datos (.CSV)
+                </button>
+            </div>
+
+        </aside>
+
+        <!-- Main Dashboard View -->
+        <section class="flex-grow flex flex-col gap-6 min-w-0">
+            
+            <!-- KPI Summary Strip -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="kpi-strip">
+                <!-- KPI 1 -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <span id="kpi-max-title" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Máximo Absoluto</span>
+                    <div class="flex items-baseline gap-1 mt-2">
+                        <span id="kpi-max-val" class="text-2xl font-bold text-slate-800">--</span>
+                        <span id="kpi-max-unit" class="text-sm font-medium text-slate-500">--</span>
+                    </div>
+                    <span id="kpi-max-lbl" class="text-[10px] text-brand-600 font-medium mt-1">Registrado</span>
+                </div>
+                <!-- KPI 2 -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Promedio Climatológico</span>
+                    <div class="flex items-baseline gap-1 mt-2">
+                        <span id="kpi-avg-val" class="text-2xl font-bold text-slate-800">--</span>
+                        <span id="kpi-avg-unit" class="text-sm font-medium text-slate-500">--</span>
+                    </div>
+                    <span id="kpi-avg-lbl" class="text-[10px] text-slate-500 mt-1">Media de la serie</span>
+                </div>
+                <!-- KPI 3 -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Acumulado ETo Ene-Jul</span>
+                    <div class="flex items-baseline gap-1 mt-2">
+                        <span id="kpi-eto25" class="text-2xl font-bold text-slate-800">--</span>
+                        <span class="text-sm font-medium text-slate-500">mm</span>
+                    </div>
+                    <span class="text-[10px] text-slate-500 mt-1">Acumulado en 2025</span>
+                </div>
+                <!-- KPI 4 -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Acumulado ETo 2026</span>
+                    <div class="flex items-baseline gap-1 mt-2">
+                        <span id="kpi-eto26" class="text-2xl font-bold text-brand-700">--</span>
+                        <span class="text-sm font-medium text-brand-800">mm</span>
+                    </div>
+                    <span id="kpi-trend-lbl" class="text-[10px] font-semibold text-red-500 mt-1 flex items-center gap-0.5">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                        <span>+4.2% respecto a 2025</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Chart Box -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800" id="chart-main-title">Evolución Climática por Estación</h3>
+                        <p class="text-xs text-slate-500" id="chart-sub-title">Comparando datos mensuales registrados</p>
+                    </div>
+                    <!-- Chart controls -->
+                    <div class="flex items-center gap-2 self-stretch sm:self-auto justify-end">
+                        <button onclick="setChartType('line')" id="btn-chart-line" class="p-1.5 rounded-lg border text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        </button>
+                        <button onclick="setChartType('bar')" id="btn-chart-bar" class="p-1.5 rounded-lg border text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Canvas Wrapper -->
+                <div class="relative h-80 sm:h-96 w-full">
+                    <canvas id="mainChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Climatological commentary -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        </div>
+                        <h4 class="text-sm font-bold text-slate-800">Interpretación Agroclimática de la Zona</h4>
+                    </div>
+                    <p id="commentary-text" class="text-xs text-slate-600 leading-relaxed">
+                        Selecciona una estación o variable para recibir comentarios adaptados a los datos.
+                    </p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-[10px] text-slate-400">Generado con modelos de cálculo IVIA (ETo Penman-Monteith)</span>
+                    <span class="text-[10px] font-semibold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full">Análisis de campaña</span>
+                </div>
+            </div>
+
+            <!-- Detailed Grid Explorer (Data Table) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800">Matriz de Datos Meteorológicos Consolidados</h4>
+                        <p class="text-xs text-slate-400">Comparación detallada mes a mes por estación</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-brand-50 text-brand-700 border border-brand-200">
+                            Estación activa: <strong id="lbl-active-table-station">Vila-real</strong>
+                        </span>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse min-w-[1200px]">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-400 font-semibold tracking-wider uppercase text-[10px]">
+                                <th class="py-3 px-4 sticky left-0 bg-slate-50 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">Mes</th>
+                                <th class="py-3 px-3 text-center">T. Media 25 (°C)</th>
+                                <th class="py-3 px-3 text-center text-blue-700 bg-blue-50/30">T. Media 26 (°C)</th>
+                                <th class="py-3 px-3 text-center">T. Máx 25 (°C)</th>
+                                <th class="py-3 px-3 text-center text-red-700 bg-red-50/20">T. Máx 26 (°C)</th>
+                                <th class="py-3 px-3 text-center">T. Mín 25 (°C)</th>
+                                <th class="py-3 px-3 text-center text-indigo-700 bg-indigo-50/20">T. Mín 26 (°C)</th>
+                                <th class="py-3 px-3 text-center">T. M. Noc 25 (°C)</th>
+                                <th class="py-3 px-3 text-center text-purple-700 bg-purple-50/20">T. M. Noc 26 (°C)</th>
+                                <th class="py-3 px-3 text-center">Humedad 25 (%)</th>
+                                <th class="py-3 px-3 text-center text-emerald-700 bg-emerald-50/20">Humedad 26 (%)</th>
+                                <th class="py-3 px-3 text-center">ETo 25 (mm)</th>
+                                <th class="py-3 px-3 text-center text-amber-700 bg-amber-50/20">ETo 26 (mm)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-slate-100 text-slate-600">
+                            <!-- Injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 border-t border-slate-800 mt-12 py-8 text-center text-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p>© 2026 Portal de Riegos IVIA - Módulo de Simulación y Análisis de Estaciones Climáticas Castellón.</p>
+            <div class="flex gap-4">
+                <span class="text-slate-500">Datos adaptados para fines comparativos</span>
+                <span class="text-brand-500 font-semibold">Julio 2026</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Climate Database (JavaScript Data Model) -->
+    <script>
+        const climateData = {
+            "Vila-real": {
+                "2025": {
+                    "tempMedia": [10.5, 11.2, 14.1, 16.8, 20.5, 24.8, 27.2, 27.5, 23.9, 19.8, 14.5, 11.0],
+                    "tempMaxima": [18.2, 19.5, 22.1, 25.0, 29.4, 33.1, 36.5, 36.9, 31.8, 27.2, 21.0, 18.5],
+                    "tempMinima": [5.2, 5.8, 8.1, 10.5, 14.2, 18.5, 21.0, 21.5, 17.8, 13.5, 9.2, 6.0],
+                    "tempMediaNocturna": [7.5, 8.2, 10.8, 13.2, 17.0, 21.2, 23.8, 24.2, 20.5, 16.2, 11.5, 8.2],
+                    "humedad": [68, 65, 63, 62, 64, 66, 68, 70, 72, 71, 70, 69],
+                    "eto": [42, 51, 85, 115, 145, 168, 182, 160, 112, 78, 48, 38]
+                },
+                "2026": {
+                    "tempMedia": [11.2, 12.0, 13.8, 17.5, 21.2, 25.4, 27.8], // up to July
+                    "tempMaxima": [19.0, 20.4, 21.8, 26.5, 30.2, 34.8, 37.2],
+                    "tempMinima": [6.0, 6.5, 7.8, 11.2, 14.8, 19.1, 21.8],
+                    "tempMediaNocturna": [8.2, 8.8, 10.5, 14.0, 17.8, 21.8, 24.5],
+                    "humedad": [65, 62, 65, 60, 62, 63, 65],
+                    "eto": [45, 55, 80, 122, 152, 175, 185]
+                }
+            },
+            "Nules": {
+                "2025": {
+                    "tempMedia": [10.8, 11.5, 14.3, 17.0, 20.7, 24.9, 27.4, 27.7, 24.1, 20.0, 14.8, 11.3],
+                    "tempMaxima": [18.0, 19.2, 21.8, 24.8, 29.0, 32.8, 36.2, 36.6, 31.5, 27.0, 21.2, 18.3],
+                    "tempMinima": [5.5, 6.1, 8.4, 10.8, 14.5, 18.8, 21.3, 21.8, 18.1, 13.8, 9.5, 6.3],
+                    "tempMediaNocturna": [7.8, 8.5, 11.1, 13.5, 17.3, 21.5, 24.1, 24.5, 20.8, 16.5, 11.8, 8.5],
+                    "humedad": [70, 67, 65, 64, 66, 68, 70, 72, 74, 73, 72, 71],
+                    "eto": [40, 49, 82, 112, 142, 165, 178, 156, 110, 75, 46, 36]
+                },
+                "2026": {
+                    "tempMedia": [11.5, 12.3, 14.0, 17.7, 21.4, 25.6, 28.0],
+                    "tempMaxima": [18.8, 20.1, 21.5, 26.2, 29.9, 34.5, 37.0],
+                    "tempMinima": [6.3, 6.8, 8.1, 11.5, 15.1, 19.4, 22.1],
+                    "tempMediaNocturna": [8.5, 9.1, 10.8, 14.3, 18.1, 22.1, 24.8],
+                    "humedad": [67, 64, 67, 62, 64, 65, 67],
+                    "eto": [43, 53, 78, 119, 149, 172, 181]
+                }
+            },
+            "Onda": {
+                "2025": {
+                    "tempMedia": [9.2, 10.1, 13.5, 16.2, 20.1, 24.9, 28.1, 28.3, 23.4, 18.9, 13.2, 9.8],
+                    "tempMaxima": [19.5, 21.0, 24.2, 27.8, 31.5, 35.8, 39.2, 39.8, 33.5, 28.9, 22.1, 19.1],
+                    "tempMinima": [3.5, 4.2, 6.8, 9.1, 13.0, 17.5, 20.2, 20.5, 16.5, 11.8, 7.2, 4.1],
+                    "tempMediaNocturna": [6.0, 6.8, 9.5, 12.2, 16.1, 20.8, 23.5, 23.8, 19.5, 14.8, 9.8, 6.5],
+                    "humedad": [60, 58, 55, 54, 56, 55, 53, 56, 61, 63, 62, 61],
+                    "eto": [48, 58, 95, 128, 162, 188, 205, 180, 125, 85, 54, 42]
+                },
+                "2026": {
+                    "tempMedia": [10.0, 11.1, 13.0, 17.0, 20.8, 25.8, 28.5],
+                    "tempMaxima": [20.2, 22.1, 23.5, 29.1, 32.8, 37.2, 40.2],
+                    "tempMinima": [4.2, 5.0, 6.2, 9.8, 13.5, 18.2, 21.0],
+                    "tempMediaNocturna": [6.8, 7.5, 9.0, 12.8, 16.8, 21.5, 24.2],
+                    "humedad": [58, 55, 58, 52, 53, 52, 54],
+                    "eto": [51, 62, 90, 135, 170, 195, 210]
+                }
+            },
+            "Vall d'Uixó": {
+                "2025": {
+                    "tempMedia": [10.2, 10.9, 13.8, 16.5, 20.3, 24.6, 27.5, 27.8, 23.7, 19.3, 14.1, 10.7],
+                    "tempMaxima": [18.8, 20.1, 23.0, 26.2, 30.5, 34.2, 37.8, 38.2, 32.6, 28.0, 21.6, 18.9],
+                    "tempMinima": [4.8, 5.2, 7.5, 10.0, 13.8, 18.1, 20.8, 21.2, 17.2, 12.8, 8.5, 5.5],
+                    "tempMediaNocturna": [7.0, 7.6, 10.2, 12.8, 16.8, 21.0, 23.8, 24.2, 20.0, 15.5, 11.0, 7.8],
+                    "humedad": [65, 63, 61, 60, 62, 63, 64, 66, 68, 67, 66, 65],
+                    "eto": [44, 53, 88, 118, 150, 172, 188, 166, 116, 80, 50, 40]
+                },
+                "2026": {
+                    "tempMedia": [10.9, 11.8, 13.4, 17.2, 21.0, 25.1, 28.0],
+                    "tempMaxima": [19.5, 21.2, 22.4, 27.5, 31.8, 35.6, 38.5],
+                    "tempMinima": [5.5, 6.0, 7.0, 10.6, 14.2, 18.8, 21.5],
+                    "tempMediaNocturna": [7.8, 8.4, 9.8, 13.4, 17.2, 21.8, 24.4],
+                    "humedad": [62, 60, 63, 58, 60, 60, 62],
+                    "eto": [47, 57, 84, 125, 158, 180, 192]
+                }
+            },
+            "Ribera de Cabanes": {
+                "2025": {
+                    "tempMedia": [9.8, 10.4, 12.9, 15.3, 18.9, 23.1, 25.8, 26.2, 22.8, 18.6, 13.6, 10.3],
+                    "tempMaxima": [16.8, 17.9, 20.2, 23.1, 26.8, 30.5, 33.2, 33.8, 29.5, 25.1, 19.5, 17.2],
+                    "tempMinima": [6.2, 6.8, 9.2, 11.8, 15.5, 19.8, 22.1, 22.5, 19.0, 14.8, 10.5, 7.2],
+                    "tempMediaNocturna": [8.0, 8.5, 11.0, 13.5, 17.2, 21.2, 23.8, 24.2, 20.8, 16.5, 12.0, 8.8],
+                    "humedad": [73, 71, 70, 69, 71, 73, 75, 76, 77, 76, 75, 74],
+                    "eto": [36, 44, 75, 102, 130, 148, 160, 142, 98, 68, 42, 32]
+                },
+                "2026": {
+                    "tempMedia": [10.5, 11.2, 12.5, 16.1, 19.5, 23.8, 26.2],
+                    "tempMaxima": [17.5, 18.6, 19.8, 24.5, 27.9, 31.8, 34.0],
+                    "tempMinima": [7.0, 7.4, 8.8, 12.5, 16.0, 20.2, 22.8],
+                    "tempMediaNocturna": [8.8, 9.2, 10.5, 14.2, 17.8, 21.8, 24.5],
+                    "humedad": [70, 68, 71, 66, 68, 70, 74],
+                    "eto": [39, 48, 72, 108, 136, 155, 165]
+                }
+            }
+        };
+
+        const monthsList = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+        const variableMeta = {
+            tempMedia: { label: "Temperatura Media", unit: "°C", color: "rgba(59, 130, 246, 1)", bg: "rgba(59, 130, 246, 0.1)" },
+            tempMaxima: { label: "Temperatura Máxima", unit: "°C", color: "rgba(239, 68, 68, 1)", bg: "rgba(239, 68, 68, 0.1)" },
+            tempMinima: { label: "Temp. Mínima (Nocturna)", unit: "°C", color: "rgba(79, 70, 229, 1)", bg: "rgba(79, 70, 229, 0.1)" },
+            tempMediaNocturna: { label: "Temp. Media Nocturna", unit: "°C", color: "rgba(124, 58, 237, 1)", bg: "rgba(124, 58, 237, 0.1)" },
+            humedad: { label: "Humedad Relativa", unit: "%", color: "rgba(16, 185, 129, 1)", bg: "rgba(16, 185, 129, 0.1)" },
+            eto: { label: "Evapotranspiración ETo", unit: "mm", color: "rgba(245, 158, 11, 1)", bg: "rgba(245, 158, 11, 0.1)" }
+        };
+
+        // UI State
+        let activeStation = "Vila-real";
+        let activeVariable = "tempMedia";
+        let activeViewMode = "years"; // 'years' or 'stations'
+        let activeChartType = "line";
+        let chartInstance = null;
+
+        // Initialize App on DOM Ready
+        window.addEventListener('DOMContentLoaded', () => {
+            updatePickersUI();
+            renderDashboard();
+        });
+
+        // Set state functions
+        function setStation(station) {
+            activeStation = station;
+            updatePickersUI();
+            renderDashboard();
+        }
+
+        function setVariable(variable) {
+            activeVariable = variable;
+            updatePickersUI();
+            renderDashboard();
+        }
+
+        function setViewMode(mode) {
+            activeViewMode = mode;
+            updatePickersUI();
+            renderDashboard();
+        }
+
+        function setChartType(type) {
+            activeChartType = type;
+            renderChart();
+        }
+
+        // Keep UI buttons synchronized with active state
+        function updatePickersUI() {
+            // Stations list updated with Nules
+            ["Vila-real", "Nules", "Onda", "Vall d'Uixó", "Ribera de Cabanes"].forEach(st => {
+                const btn = document.getElementById(`btn-${st.replace(/\s+/g, '-').replace(/'/g, '-')}`);
+                if (btn) {
+                    if (st === activeStation) {
+                        btn.className = "w-full text-left px-4 py-3 rounded-xl border text-sm font-bold transition-all bg-brand-50 border-brand-500 text-brand-900 shadow-sm flex justify-between items-center";
+                    } else {
+                        btn.className = "w-full text-left px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-medium transition-all hover:bg-slate-50 text-slate-700 flex justify-between items-center group";
+                    }
+                }
+            });
+
+            // Variables
+            Object.keys(variableMeta).forEach(v => {
+                const btn = document.getElementById(`btn-var-${v}`);
+                if (btn) {
+                    if (v === activeVariable) {
+                        btn.className = "flex items-center gap-3 px-4 py-3 rounded-xl border text-sm text-left transition-all font-bold bg-brand-50 border-brand-500 text-brand-900 shadow-sm";
+                    } else {
+                        btn.className = "flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm text-left transition-all font-medium hover:bg-slate-50 text-slate-700";
+                    }
+                }
+            });
+
+            // View modes
+            const btnYears = document.getElementById("btn-mode-years");
+            const btnStations = document.getElementById("btn-mode-stations");
+            
+            if (activeViewMode === 'years') {
+                btnYears.className = "w-full text-center py-2.5 px-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all bg-brand-600 text-white shadow-sm border-brand-600";
+                btnStations.className = "w-full text-center py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all border border-slate-200 text-slate-500 hover:bg-slate-50";
+            } else {
+                btnStations.className = "w-full text-center py-2.5 px-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all bg-brand-600 text-white shadow-sm border-brand-600";
+                btnYears.className = "w-full text-center py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all border border-slate-200 text-slate-500 hover:bg-slate-50";
+            }
+
+            // Sync text label for data table
+            document.getElementById("lbl-active-table-station").innerText = activeStation;
+        }
+
+        // Render everything on dashboard
+        function renderDashboard() {
+            renderKPIs();
+            renderChart();
+            renderCommentary();
+            renderTable();
+        }
+
+        // Render KPI widgets
+        function renderKPIs() {
+            const data25 = climateData[activeStation]["2025"][activeVariable];
+            const data26 = climateData[activeStation]["2026"][activeVariable];
+            const meta = variableMeta[activeVariable];
+
+            // 1. Max absolute recorded or Min absolute (depending on variable)
+            const isMinimumVar = activeVariable === "tempMinima";
+            const kpiTitleElement = document.getElementById("kpi-max-title");
+            
+            let targetExtremeVal;
+            if (isMinimumVar) {
+                kpiTitleElement.innerText = "Mínimo Absoluto";
+                const min25 = Math.min(...data25);
+                const min26 = Math.min(...data26);
+                targetExtremeVal = Math.min(min25, min26);
+                document.getElementById("kpi-max-lbl").innerText = `Cota mínima registrada en ${activeStation}`;
+            } else {
+                kpiTitleElement.innerText = "Máximo Absoluto";
+                const max25 = Math.max(...data25);
+                const max26 = Math.max(...data26);
+                targetExtremeVal = Math.max(max25, max26);
+                document.getElementById("kpi-max-lbl").innerText = `Pico máximo registrado en ${activeStation}`;
+            }
+            
+            document.getElementById("kpi-max-val").innerText = targetExtremeVal.toFixed(1);
+            document.getElementById("kpi-max-unit").innerText = meta.unit;
+
+            // 2. Average Climatological
+            const combinedData = [...data25, ...data26];
+            const avg = combinedData.reduce((acc, v) => acc + v, 0) / combinedData.length;
+            document.getElementById("kpi-avg-val").innerText = avg.toFixed(1);
+            document.getElementById("kpi-avg-unit").innerText = meta.unit;
+            document.getElementById("kpi-avg-lbl").innerText = `Promedio global 2025-26`;
+
+            // 3. Accumulated ETo 2025 (Ene-Jul)
+            const eto25_series = climateData[activeStation]["2025"]["eto"].slice(0, 7);
+            const eto25_sum = eto25_series.reduce((a, b) => a + b, 0);
+            document.getElementById("kpi-eto25").innerText = eto25_sum.toFixed(0);
+
+            // 4. Accumulated ETo 2026 (Ene-Jul)
+            const eto26_series = climateData[activeStation]["2026"]["eto"];
+            const eto26_sum = eto26_series.reduce((a, b) => a + b, 0);
+            document.getElementById("kpi-eto26").innerText = eto26_sum.toFixed(0);
+
+            // Calculate ETo accumulation difference (trends)
+            const diffPct = ((eto26_sum - eto25_sum) / eto25_sum) * 100;
+            const trendLabel = document.getElementById("kpi-trend-lbl");
+            if (diffPct > 0) {
+                trendLabel.className = "text-[10px] font-semibold text-red-600 mt-1 flex items-center gap-0.5";
+                trendLabel.innerHTML = `
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    <span>+${diffPct.toFixed(1)}% evapotranspiración (Ene-Jul)</span>
+                `;
+            } else {
+                trendLabel.className = "text-[10px] font-semibold text-emerald-600 mt-1 flex items-center gap-0.5";
+                trendLabel.innerHTML = `
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6"></path></svg>
+                    <span>${diffPct.toFixed(1)}% menos evaporación</span>
+                `;
+            }
+        }
+
+        // Render main Chart
+        function renderChart() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const meta = variableMeta[activeVariable];
+            let datasets = [];
+            let labels = monthsList;
+
+            if (activeViewMode === 'years') {
+                // View 1: 2025 vs 2026 for a single selected station
+                document.getElementById("chart-main-title").innerText = `${meta.label} en ${activeStation} (${meta.unit})`;
+                document.getElementById("chart-sub-title").innerText = `Comparación interanual de la campaña 2025 frente al transcurso de 2026`;
+
+                const data25 = climateData[activeStation]["2025"][activeVariable];
+                // Pad 2026 data with null values for the rest of the year so the line stops gracefully at July
+                const rawData26 = climateData[activeStation]["2026"][activeVariable];
+                const data26 = [...rawData26];
+                while(data26.length < 12) {
+                    data26.push(null);
+                }
+
+                datasets = [
+                    {
+                        label: `Campaña 2025`,
+                        data: data25,
+                        borderColor: 'rgba(148, 163, 184, 0.9)',
+                        backgroundColor: 'rgba(148, 163, 184, 0.1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(148, 163, 184, 1)',
+                        pointRadius: 4,
+                        tension: 0.3,
+                        spanGaps: false
+                    },
+                    {
+                        label: `Campaña 2026`,
+                        data: data26,
+                        borderColor: meta.color,
+                        backgroundColor: meta.bg,
+                        borderWidth: 3.5,
+                        pointBackgroundColor: meta.color,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        tension: 0.3,
+                        spanGaps: false
+                    }
+                ];
+            } else {
+                // View 2: Compare all stations for the selected year or available period of 2026
+                document.getElementById("chart-main-title").innerText = `Comparativa de Estaciones: ${meta.label} 2026 (${meta.unit})`;
+                document.getElementById("chart-sub-title").innerText = `Análisis comparativo de los municipios para los meses disponibles de 2026`;
+
+                // We limit labels to available months of 2026 (Jan - Jul)
+                labels = monthsList.slice(0, 7);
+
+                const colors = {
+                    "Vila-real": "rgba(59, 130, 246, 1)",      // Blue
+                    "Nules": "rgba(217, 70, 239, 1)",          // Fuchsia / Purple
+                    "Onda": "rgba(239, 68, 68, 1)",           // Red
+                    "Vall d'Uixó": "rgba(245, 158, 11, 1)",    // Amber
+                    "Ribera de Cabanes": "rgba(16, 185, 129, 1)" // Emerald
+                };
+
+                const bgs = {
+                    "Vila-real": "rgba(59, 130, 246, 0.05)",
+                    "Nules": "rgba(217, 70, 239, 0.05)",
+                    "Onda": "rgba(239, 68, 68, 0.05)",
+                    "Vall d'Uixó": "rgba(245, 158, 11, 0.05)",
+                    "Ribera de Cabanes": "rgba(16, 185, 129, 0.05)"
+                };
+
+                datasets = Object.keys(climateData).map(station => {
+                    return {
+                        label: station,
+                        data: climateData[station]["2026"][activeVariable],
+                        borderColor: colors[station],
+                        backgroundColor: bgs[station],
+                        borderWidth: station === activeStation ? 4 : 2,
+                        pointBackgroundColor: colors[station],
+                        pointRadius: station === activeStation ? 5 : 3.5,
+                        tension: 0.25
+                    };
+                });
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: activeChartType,
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                boxWidth: 12,
+                                font: { size: 11, weight: '500' },
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            padding: 12,
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleFont: { size: 12, weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toFixed(1) + ' ' + meta.unit;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: 'rgba(241, 245, 249, 1)' },
+                            ticks: {
+                                font: { size: 11, weight: '500' },
+                                color: '#64748b',
+                                callback: function(value) {
+                                    return value + ' ' + meta.unit;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 11, weight: '600' },
+                                color: '#64748b'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Dynamic Climatological Commentary
+        function renderCommentary() {
+            let txt = "";
+
+            if (activeStation === "Onda") {
+                txt = "<strong>Análisis Onda:</strong> Al ser la estación más continental (hacia el interior provincial), registra la mayor oscilación térmica de la comparativa. Las temperaturas máximas superan los 40°C en julio de 2026, una marca extrema superior a la del año pasado. Paralelamente, la humedad relativa es un 10-15% inferior a la costera Ribera de Cabanes o Nules, lo que dispara la tasa de evapotranspiración (ETo de hasta 210 mm en julio). En términos agronómicos, esto implica altas necesidades de agua y un estricto control del estrés hídrico de cítricos y almendros.";
+            } else if (activeStation === "Ribera de Cabanes") {
+                txt = "<strong>Análisis Ribera de Cabanes:</strong> Ubicada a escasos metros del litoral y colindando con zonas húmedas (Prat de Cabanes), esta estación muestra el microclima más templado y húmedo. Sus temperaturas máximas apenas superan los 33-34°C en época estival y la humedad ambiental ronda una media del 74%. Gracias a esta protección marítima, la evapotranspiración (ETo) es baja, requiriendo aportes de riego muy inferiores que Onda. No obstante, las elevadas humedades de 2026 incrementan el riesgo latente de hongos en cultivos.";
+            } else if (activeStation === "Nules") {
+                txt = "<strong>Análisis Nules:</strong> La estación de Nules refleja el microclima marítimo por excelencia de la Plana Baixa, ideal para la citricultura (cuna histórica de la Clemenules). Su proximidad al mar ejerce un papel termorregulador notable: las temperaturas mínimas invernales son suaves (mínima de 5.5°C en enero de 2025) mitigando riesgos graves de heladas devastadoras. El ambiente húmedo y las brisas costeras mantienen la evapotranspiración (ETo máxima de 181 mm en julio de 2026) en valores inferiores a los del interior (Onda), permitiendo una optimización natural del agua de riego.";
+            } else if (activeStation === "Vila-real") {
+                txt = "<strong>Análisis Vila-real EEA:</strong> Emplazada en plena llanura aluvial, representa el equilibrio de prelitoral de Castellón. Al comparar 2025 y 2026, destaca una primavera de 2026 significativamente más cálida que la del ciclo previo, con máximas que alcanzaron los 34.8°C ya en junio de 2026. La evapotranspiración acumulada de este año ha aumentado un 4.5% respecto a 2025, sugiriendo adelantos importantes en los programas y fases de riego de los huertos cítricos locales.";
+            } else {
+                txt = "<strong>Análisis Vall d'Uixó:</strong> La Vall presenta características de valle encajonado. Las brisas diurnas se ven limitadas, lo que permite picos de temperaturas máximas superiores a los de Vila-real (llegando a 38.5°C en julio de 2026). La humedad relativa ha experimentado descensos durante abril y mayo de 2026 comparados con los del año pasado, traduciéndose en una tasa de transpiración vegetal más rápida y una demanda hídrica neta en constante crecimiento.";
+            }
+
+            // Nocturnal Analysis Additions
+            if (activeVariable === "tempMinima") {
+                txt += " <br><br><em>Foco Heladas y Noches Tropicales (T. Mínimas):</em> Las temperaturas mínimas definen los umbrales de helada invernal. Onda presenta el mayor riesgo invernal con mínimas absolutas de hasta 3.5°C en enero de 2025. Por contra, en los meses de verano (junio/julio de 2026), se detecta un incremento de noches tropicales (>20°C) especialmente en Vila-real, Nules y Ribera de Cabanes, lo que incrementa la respiración nocturna de la planta disminuyendo la acumulación de azúcares.";
+            } else if (activeVariable === "tempMediaNocturna") {
+                txt += " <br><br><em>Balance de Respiración Vegetal (T. Media Nocturna):</em> La temperatura media de las horas sin luz es el indicador más preciso de la energía calórica acumulada durante la noche. Temperaturas medias nocturnas altas en 2026 (por encima de los 24°C en julio en Vila-real, Nules y Ribera de Cabanes) fuerzan un consumo acelerado de los hidratos de carbono sintetizados de día, afectando al cuajado y engorde óptimo del fruto.";
+            } else if (activeVariable === "eto") {
+                txt += " <br><br><em>Nota sobre ETo:</em> La tendencia de aumento de la evapotranspiración en el periodo común de 2026 (Ene-Jul) es un indicador clave de sequía meteorológica que demanda modernización en los sistemas de riego por goteo.";
+            }
+
+            document.getElementById("commentary-text").innerHTML = txt;
+        }
+
+        // Render detailed raw data table
+        function renderTable() {
+            const tableBody = document.getElementById("table-body");
+            tableBody.innerHTML = "";
+
+            const stData = climateData[activeStation];
+
+            for (let i = 0; i < 12; i++) {
+                const row = document.createElement("tr");
+                row.className = "hover:bg-slate-50 transition-colors";
+
+                // Check 2026 availability
+                const m26Media = stData["2026"]["tempMedia"][i] !== undefined ? stData["2026"]["tempMedia"][i].toFixed(1) : '<span class="text-slate-300">-</span>';
+                const m26Max = stData["2026"]["tempMaxima"][i] !== undefined ? stData["2026"]["tempMaxima"][i].toFixed(1) : '<span class="text-slate-300">-</span>';
+                const m26Min = stData["2026"]["tempMinima"][i] !== undefined ? stData["2026"]["tempMinima"][i].toFixed(1) : '<span class="text-slate-300">-</span>';
+                const m26Noc = stData["2026"]["tempMediaNocturna"][i] !== undefined ? stData["2026"]["tempMediaNocturna"][i].toFixed(1) : '<span class="text-slate-300">-</span>';
+                const m26Hum = stData["2026"]["humedad"][i] !== undefined ? stData["2026"]["humedad"][i].toFixed(0) : '<span class="text-slate-300">-</span>';
+                const m26Eto = stData["2026"]["eto"][i] !== undefined ? stData["2026"]["eto"][i].toFixed(0) : '<span class="text-slate-300">-</span>';
+
+                row.innerHTML = `
+                    <td class="py-2.5 px-4 font-bold text-slate-800 sticky left-0 bg-white group-hover:bg-slate-50 border-r border-slate-100 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">${monthsList[i]}</td>
+                    <td class="py-2.5 px-3 text-center">${stData["2025"]["tempMedia"][i].toFixed(1)}</td>
+                    <td class="py-2.5 px-3 text-center bg-blue-50/10 font-medium text-blue-800">${m26Media}</td>
+                    
+                    <td class="py-2.5 px-3 text-center">${stData["2025"]["tempMaxima"][i].toFixed(1)}</td>
+                    <td class="py-2.5 px-3 text-center bg-red-50/10 font-medium text-red-800">${m26Max}</td>
+                    
+                    <td class="py-2.5 px-3 text-center">${stData["2025"]["tempMinima"][i].toFixed(1)}</td>
+                    <td class="py-2.5 px-3 text-center bg-indigo-50/10 font-medium text-indigo-800">${m26Min}</td>
+                    
+                    <td class="py-2.5 px-3 text-center">${stData["2025"]["tempMediaNocturna"][i].toFixed(1)}</td>
+                    <td class="py-2.5 px-3 text-center bg-purple-50/10 font-medium text-purple-800">${m26Noc}</td>
+                    
+                    <td class="py-2.5 px-3 text-center">${stData["2025"]["humedad"][i]}%</td>
+                    <td class="py-2.5 px-3 text-center bg-emerald-50/10 font-medium text-emerald-800">${m26Hum !== '-' ? m26Hum + '%' : '-'}</td>
+                    
+                    <td class="py-2.5 px-3 text-center">${stData["2025"]["eto"][i]}</td>
+                    <td class="py-2.5 px-3 text-center bg-amber-50/10 font-medium text-amber-800">${m26Eto}</td>
+                `;
+                tableBody.appendChild(row);
+            }
+        }
+
+        // Export data to CSV helper
+        function exportToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Estacion,Mes,Temp_Media_2025,Temp_Media_2026,Temp_Max_2025,Temp_Max_2026,Temp_Min_Nocturna_2025,Temp_Min_Nocturna_2026,Temp_Media_Nocturna_2025,Temp_Media_Nocturna_2026,Humedad_2025,Humedad_2026,ETo_2025,ETo_2026\r\n";
+
+            Object.keys(climateData).forEach(station => {
+                const st = climateData[station];
+                for (let i = 0; i < 12; i++) {
+                    const tm25 = st["2025"]["tempMedia"][i];
+                    const tm26 = st["2026"]["tempMedia"][i] !== undefined ? st["2026"]["tempMedia"][i] : "";
+                    const tmax25 = st["2025"]["tempMaxima"][i];
+                    const tmax26 = st["2026"]["tempMaxima"][i] !== undefined ? st["2026"]["tempMaxima"][i] : "";
+                    const tmin25 = st["2025"]["tempMinima"][i];
+                    const tmin26 = st["2026"]["tempMinima"][i] !== undefined ? st["2026"]["tempMinima"][i] : "";
+                    const tnoc25 = st["2025"]["tempMediaNocturna"][i];
+                    const tnoc26 = st["2026"]["tempMediaNocturna"][i] !== undefined ? st["2026"]["tempMediaNocturna"][i] : "";
+                    const hum25 = st["2025"]["humedad"][i];
+                    const hum26 = st["2026"]["humedad"][i] !== undefined ? st["2026"]["humedad"][i] : "";
+                    const eto25 = st["2025"]["eto"][i];
+                    const eto26 = st["2026"]["eto"][i] !== undefined ? st["2026"]["eto"][i] : "";
+
+                    csvContent += `"${station}","${monthsList[i]}",${tm25},${tm26},${tmax25},${tmax26},${tmin25},${tmin26},${tnoc25},${tnoc26},${hum25},${hum26},${eto25},${eto26}\r\n`;
+                }
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Comparativa_Climatica_Castellon_2025_2026.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
